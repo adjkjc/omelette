@@ -115,12 +115,14 @@
             if (!(/\s+/.test(line.slice(-1)))) {
               lastIndex = -1;
             }
-            accessor = t => line.split(/\s+/).slice(1, lastIndex).filter(Boolean).reduce((a, v) => a[v], t);
-            replies = fragment === 1 ? Object.keys(objectTree) : accessor(objectTree);
+            if (fragment === 1) {
+              replies = Object.keys(objectTree);
+            } else {
+              replies = objectTree;
+              accessor = t => line.split(/\s+/).slice(1, lastIndex).filter(Boolean).reduce((a, v) => a[v] instanceof Function ? a[v]() : a[v], t);
+              replies = fragment === 1 ? Object.keys(objectTree) : accessor(objectTree);
+            };
             return reply((function(replies) {
-              if (replies instanceof Function) {
-                return replies();
-              }
               if (replies instanceof Array) {
                 return replies;
               }
