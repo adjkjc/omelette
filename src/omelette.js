@@ -111,12 +111,21 @@
         depth = depthOf(objectTree);
         for (level = i = 1, ref = depth; (1 <= ref ? i <= ref : i >= ref); level = 1 <= ref ? ++i : --i) {
           this.on(`$${level}`, function({fragment, reply, line}) {
-            var accessor, lastIndex, replies;
+            var lastIndex, replies;
             if (!(/\s+/.test(line.slice(-1)))) {
               lastIndex = -1;
             }
-            accessor = t => line.split(/\s+/).slice(1, lastIndex).filter(Boolean).reduce((a, v) => a[v], t);
-            replies = fragment === 1 ? Object.keys(objectTree) : accessor(objectTree);
+            if (fragment === 1) {
+              replies = Object.keys(objectTree);
+            } else {
+              replies = objectTree;
+              line.split(/\s+/).slice(1, lastIndex).filter(Boolean).forEach(key => {
+                replies = replies[key];
+                if (replies instanceof Function) {
+                  replies = replies()
+                }
+              })
+            };
             return reply((function(replies) {
               if (replies instanceof Function) {
                 return replies();
